@@ -4,7 +4,8 @@ project(erbio VERSION 0.1.0)
 include_directories("D:/flych/wsl/source/openssl-OpenSSL_1_1_1d/include")
 link_directories("D:/flych/wsl/source/openssl-OpenSSL_1_1_1d/lib")
 
-link_libraries("libssl_static")
+link_libraries("libssl")
+link_libraries("libcrypto")
 
 link_libraries("Ws2_32.lib")
 
