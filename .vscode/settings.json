@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/c_src"
+    "cmake.sourceDirectory": "${workspaceFolder}/c_src",
+    "files.associations": {
+        "bio.h": "c",
+        "db.h": "c"
+    }
 }

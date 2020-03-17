@@ -3,6 +3,11 @@
 
 typedef unsigned char byte;
 
+struct port_memory_s {
+    int size;
+    byte *memory;
+};
+
 /* Read the 2 length bytes (MSB first), then the data. */
 int read_cmd(byte *buf);
 
