@@ -1,6 +1,6 @@
-%%% erpbio encapsulates OpenSSL mem BIO APIs
+%%% erbio encapsulates OpenSSL mem BIO APIs
 
--module(erpbio).
+-module(erbio).
 
 -behaviour(gen_server).
 
@@ -15,7 +15,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -record(state, {port}).
 
-%% Start erpbio
+%% Start erbio
 -spec start(string(), string(), integer())  -> {ok, pid()}.
 start(CertFile, KeyFile, BufferLen) ->
    gen_server:start_link({local, ?MODULE}, ?MODULE, [CertFile, KeyFile, BufferLen], []).
@@ -32,7 +32,7 @@ start(BufferLen) ->
 start() ->
    gen_server:start_link({local, ?MODULE}, ?MODULE, [undef, undef, undef], []).
 
-%% Stop erpbio
+%% Stop erbio
 -spec stop() -> ok.
 stop() ->
    gen_server:call(?MODULE, stop).
@@ -97,6 +97,7 @@ handle_call({create, client}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({create, server}, _From, State) ->
@@ -110,13 +111,14 @@ handle_call({create, server}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({cleanup, Id}, _From, State) ->
     #state{port=Port} = State,
     Port ! {self(), {command, <<?CMD_CLEANUP, Id:16/big-integer>>}},
     receive
-      {Port, {data, Data}} ->
+      {Port, {data, _Data}} ->
          {reply, ok, State}
     end;
 
@@ -134,6 +136,7 @@ handle_call({handshake, Id}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({is_init_finished, Id}, _From, State) ->
@@ -150,6 +153,7 @@ handle_call({is_init_finished, Id}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({ssl_write, Id, Data}, _From, State) ->
@@ -166,6 +170,7 @@ handle_call({ssl_write, Id, Data}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({ssl_read, Id}, _From, State) ->
@@ -182,6 +187,7 @@ handle_call({ssl_read, Id}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({bio_write, Id, Data}, _From, State) ->
@@ -195,6 +201,7 @@ handle_call({bio_write, Id, Data}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call({bio_read, Id}, _From, State) ->
@@ -208,6 +215,7 @@ handle_call({bio_read, Id}, _From, State) ->
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
+         end
     end;
 
 handle_call(_Request, _From, State) ->
@@ -229,10 +237,10 @@ code_change(_OldVsn, State, _Extra) ->
 
 
 genCommand([undef, undef, undef]) ->
-    unicode:characters_to_list(["erpbio "]);
+    unicode:characters_to_list(["erbio "]);
 genCommand([undef, undef, BufferLen]) ->
-    unicode:characters_to_list(["erpbio -b ", BufferLen]);
+    unicode:characters_to_list(["erbio -b ", BufferLen]);
 genCommand([CertFile, KeyFile, undef]) ->
-    unicode:characters_to_list(["erpbio --cert ", CertFile, " --key ", KeyFile]);
+    unicode:characters_to_list(["erbio --cert ", CertFile, " --key ", KeyFile]);
 genCommand([CertFile, KeyFile, BufferLen]) ->
-    unicode:characters_to_list(["erpbio --cert ", CertFile, " --key ", KeyFile, " -b ", BufferLen]).
+    unicode:characters_to_list(["erbio --cert ", CertFile, " --key ", KeyFile, " -b ", BufferLen]).
