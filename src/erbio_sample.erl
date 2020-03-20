@@ -8,8 +8,15 @@
 start() ->
     erbio:start(),
     {Server, Client} = createPair(),
-    % io:format("Server:~w Client:~w ~n", [Server, Client]),
-    doHandShake(Client, Server),
+
+    erbio:handshake(Client),
+    Data = erbio:bio_read(Client),
+    erbio:bio_write(Server, Data),
+
+    erbio:handshake(Server),
+    Data1 = erbio:bio_read(Server),
+    erbio:bio_write(Client, Data1),
+
     Data = say(Server, "Welcome to 2020"),
     echo(Client, Data),
     Data1 = say(Client, "Unforgettable 2020"),
@@ -23,19 +30,6 @@ createPair() ->
 freePair(Server, Client) ->
     erbio:cleanup(Client),
     erbio:cleanup(Server).
-
-doHandShake(Peer1, Peer2) ->
-    case erbio:is_init_finished(Peer1) of
-        true -> done;
-
-        false ->
-            erbio:handshake(Peer1),
-            Data = erbio:bio_read(Peer1),
-            erbio:bio_write(Peer2, Data),
-            doHandShake(Peer2, Peer1);
-
-        _ -> error
-    end.
 
 say(Id, Msg) ->
     erbio:ssl_write(Id, Msg),
