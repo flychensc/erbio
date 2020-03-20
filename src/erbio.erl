@@ -38,7 +38,7 @@ stop() ->
    gen_server:call(?MODULE, stop).
 
 %% create client/server
--spec create(client | server) -> {ok, integer()} | fail.
+-spec create(client | server) -> integer() | fail.
 create(Type) ->
     gen_server:call(?MODULE, {create, Type}).
 
@@ -53,27 +53,27 @@ handshake(Id) ->
     gen_server:call(?MODULE, {handshake, Id}).
 
 %% is init finished
--spec is_init_finished(integer()) -> {ok, true | false} | fail.
+-spec is_init_finished(integer()) -> true | false.
 is_init_finished(Id) ->
     gen_server:call(?MODULE, {is_init_finished, Id}).
 
 %% do ssl_write
--spec ssl_write(integer(), binary()) -> {ok, integer()} | wouldblock | fail.
+-spec ssl_write(integer(), binary()) -> integer() | wouldblock | fail.
 ssl_write(Id, Data) ->
     gen_server:call(?MODULE, {ssl_write, Id, Data}).
 
 %% do ssl_read
--spec ssl_read(integer()) -> {ok, binary()} | wouldblock | fail.
+-spec ssl_read(integer()) -> binary() | wouldblock | fail.
 ssl_read(Id) ->
     gen_server:call(?MODULE, {ssl_read, Id}).
 
 %% do bio_write
--spec bio_write(integer(), binary()) -> {ok, integer()} | fail.
+-spec bio_write(integer(), binary()) -> integer() | fail.
 bio_write(Id, Data) ->
     gen_server:call(?MODULE, {bio_write, Id, Data}).
 
 %% do bio_read
--spec bio_read(integer()) -> {ok, binary()} | fail.
+-spec bio_read(integer()) -> binary() | fail.
 bio_read(Id) ->
     gen_server:call(?MODULE, {bio_read, Id}).
 
@@ -93,7 +93,7 @@ handle_call({create, client}, _From, State) ->
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, Id:16/big-integer>> ->
-               {reply, {ok, Id}, State};
+               {reply, Id, State};
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
@@ -107,7 +107,7 @@ handle_call({create, server}, _From, State) ->
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, Id:16/big-integer>> ->
-               {reply, {ok, Id}, State};
+               {reply, Id, State};
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
@@ -146,24 +146,25 @@ handle_call({is_init_finished, Id}, _From, State) ->
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, 1>> ->
-               {reply, {ok, true}, State};
+               {reply, true, State};
 
             <<?RET_OK, 0>> ->
-               {reply, {ok, false}, State};
+               {reply, false, State};
 
             <<?RET_FAIL>> ->
-               {reply, fail, State}
+               {reply, false, State}
          end
     end;
 
 handle_call({ssl_write, Id, Data}, _From, State) ->
     #state{port=Port} = State,
-    Port ! {self(), {command, <<?CMD_SSL_WRITE, Id:16/big-integer, Data/binary>>}},
+    DLen = size(Data),
+    Port ! {self(), {command, <<?CMD_SSL_WRITE, Id:16/big-integer, DLen:16/big-integer, Data/binary>>}},
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, Written>> ->
-               {reply, {ok, Written}, State};
+               {reply, Written, State};
 
             <<?RET_WOULD_BLOCK, 0>> ->
                {reply, wouldblock, State};
@@ -180,7 +181,7 @@ handle_call({ssl_read, Id}, _From, State) ->
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, ReadData/binary>> ->
-               {reply, {ok, ReadData}, State};
+               {reply, ReadData, State};
 
             <<?RET_WOULD_BLOCK, 0>> ->
                {reply, wouldblock, State};
@@ -192,12 +193,13 @@ handle_call({ssl_read, Id}, _From, State) ->
 
 handle_call({bio_write, Id, Data}, _From, State) ->
     #state{port=Port} = State,
-    Port ! {self(), {command, <<?CMD_BIO_WRITE, Id:16/big-integer, Data/binary>>}},
+    DLen = size(Data),
+    Port ! {self(), {command, <<?CMD_BIO_WRITE, Id:16/big-integer, DLen:16/big-integer, Data/binary>>}},
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, Written>> ->
-               {reply, {ok, Written}, State};
+               {reply, Written, State};
 
             <<?RET_FAIL>> ->
                {reply, fail, State}
@@ -211,7 +213,7 @@ handle_call({bio_read, Id}, _From, State) ->
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
             <<?RET_OK, ReadData/binary>> ->
-               {reply, {ok, ReadData}, State};
+               {reply, ReadData, State};
 
             <<?RET_FAIL>> ->
                {reply, fail, State}

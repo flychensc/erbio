@@ -454,6 +454,7 @@ int main(int argc, char** argv) {
             ret = -1;
             break;
         }
+        LOG_DEBUG("\r\n");
     }
 
     db_release();
