@@ -8,7 +8,7 @@ static char _debug_buf[1024+4] = {0};
 
 int init_debug(void)
 {
-    _dbg_file = CreateFile("erbio.log", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+    _dbg_file = CreateFile("erbio.log", GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, 0, NULL);
     if(INVALID_HANDLE_VALUE == _dbg_file) {
         return -1;
     }
