@@ -91,7 +91,7 @@ handle_call({create, client}, _From, State) ->
     Port ! {self(), {command, <<?CMD_CREATE_CLIENT>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, Id:16/big-integer>> ->
                {reply, {ok, Id}, State};
 
@@ -105,7 +105,7 @@ handle_call({create, server}, _From, State) ->
     Port ! {self(), {command, <<?CMD_CREATE_SERVER>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, Id:16/big-integer>> ->
                {reply, {ok, Id}, State};
 
@@ -127,7 +127,7 @@ handle_call({handshake, Id}, _From, State) ->
     Port ! {self(), {command, <<?CMD_HANDSHAKE, Id:16/big-integer>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK>> ->
                {reply, ok, State};
 
@@ -144,7 +144,7 @@ handle_call({is_init_finished, Id}, _From, State) ->
     Port ! {self(), {command, <<?CMD_IS_INIT_FINISHED, Id:16/big-integer>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, 1>> ->
                {reply, {ok, true}, State};
 
@@ -161,7 +161,7 @@ handle_call({ssl_write, Id, Data}, _From, State) ->
     Port ! {self(), {command, <<?CMD_SSL_WRITE, Id:16/big-integer, Data/binary>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, Written>> ->
                {reply, {ok, Written}, State};
 
@@ -178,7 +178,7 @@ handle_call({ssl_read, Id}, _From, State) ->
     Port ! {self(), {command, <<?CMD_SSL_READ, Id:16/big-integer>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, ReadData/binary>> ->
                {reply, {ok, ReadData}, State};
 
@@ -195,7 +195,7 @@ handle_call({bio_write, Id, Data}, _From, State) ->
     Port ! {self(), {command, <<?CMD_BIO_WRITE, Id:16/big-integer, Data/binary>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, Written>> ->
                {reply, {ok, Written}, State};
 
@@ -209,7 +209,7 @@ handle_call({bio_read, Id}, _From, State) ->
     Port ! {self(), {command, <<?CMD_BIO_READ, Id:16/big-integer>>}},
     receive
       {Port, {data, Data}} ->
-         case Data of
+         case list_to_binary(Data) of
             <<?RET_OK, ReadData/binary>> ->
                {reply, {ok, ReadData}, State};
 
