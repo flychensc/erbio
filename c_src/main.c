@@ -2,6 +2,7 @@
 #include "bio.h"
 #include "comm.h"
 #include "db.h"
+#include "debug.h"
 
 #define DEFAULG_BUFFER_LEN  2048    // 2KB
 
@@ -15,6 +16,8 @@ static byte *_send_buffer = NULL;
 BOOL WINAPI ConsoleHandler(DWORD dwCtrlType) {
 	db_release();
     ssl_release();
+
+    RELEASE_DEBUG();
 
     if(_recv_buffer) {
         free(_recv_buffer);
@@ -65,7 +68,11 @@ int handle_cleanup(byte *data) {
     struct ssl_client *client;
     int id;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
@@ -82,7 +89,10 @@ int handle_create_client(byte *data) {
     struct ssl_client *client;
     int id;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = db_allocId();
+    LOG_DEBUG("\r\n alloc id:%d", id);
     if (DB_INVALID_ID == id) {
 
         _send_buffer[0] = RET_FAIL;
@@ -109,7 +119,10 @@ int handle_create_server(byte *data) {
     struct ssl_client *client;
     int id;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = db_allocId();
+    LOG_DEBUG("\r\n alloc id:%d", id);
     if (DB_INVALID_ID == id) {
 
         _send_buffer[0] = RET_FAIL;
@@ -136,15 +149,21 @@ int handle_handshake(byte *data) {
     struct ssl_client *client;
     int id;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
         switch(do_ssl_handshake(client)) {
             case SSLSTATUS_OK:
+                LOG_DEBUG("\r\n handshaked");
                 _send_buffer[0] = RET_OK;
                 break;
             case SSLSTATUS_WANT_IO:
+                LOG_DEBUG("\r\n handshaking");
                 _send_buffer[0] = RET_WOULD_BLOCK;
                 break;
             case SSLSTATUS_FAIL:
@@ -168,14 +187,20 @@ int handle_is_init_finished(byte *data) {
     struct ssl_client *client;
     int id;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
         _send_buffer[0] = RET_OK;
         if(is_init_finished(client)) {
+            LOG_DEBUG("\r\n init finished");
             _send_buffer[1] = 1;
         } else {
+            LOG_DEBUG("\r\n init not finished");
             _send_buffer[1] = 0;
         }
         write_cmd(_send_buffer, 1+1);
@@ -195,12 +220,18 @@ int handle_ssl_write(byte *data) {
     short dlen;
     int written;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
         dlen = CONV_IN16(&data[2]);
         buf = &data[4];
+
+        LOG_DEBUG("\r\n data len:%d", dlen);
 
         switch(do_ssl_write(client, buf, dlen, &written)) {
             case SSLSTATUS_OK:
@@ -234,7 +265,11 @@ int handle_ssl_read(byte *data) {
     short dlen;
     int readbytes;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
@@ -243,6 +278,7 @@ int handle_ssl_read(byte *data) {
 
         switch(do_ssl_read(client, buf, dlen, &readbytes)) {
             case SSLSTATUS_OK:
+                LOG_DEBUG("\r\n read bytes:%d", readbytes);
                 _send_buffer[0] = RET_OK;
                 write_cmd(_send_buffer, 1+readbytes);
                 return 0;
@@ -272,12 +308,18 @@ int handle_bio_write(byte *data) {
     short dlen;
     int written;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
         dlen = CONV_IN16(&data[2]);
         buf = &data[4];
+
+        LOG_DEBUG("\r\n data len:%d", dlen);
 
         written = do_bio_write(client, buf, dlen);
         if (written > 0) {
@@ -305,7 +347,11 @@ int handle_bio_read(byte *data) {
     short dlen;
     int readbytes;
 
+    LOG_DEBUG("\r\n call %s", __func__);
+
     id = CONV_IN16(data);
+
+    LOG_DEBUG("\r\n id is %d", id);
 
     client = db_get(id);
     if(client) {
@@ -314,6 +360,7 @@ int handle_bio_read(byte *data) {
 
         readbytes = do_bio_read(client, buf, dlen);
         if (readbytes > 0) {
+            LOG_DEBUG("\r\n read bytes:%d", readbytes);
             _send_buffer[0] = RET_OK;
             write_cmd(_send_buffer, 1+readbytes);
             return 0;
@@ -391,8 +438,11 @@ int main(int argc, char** argv) {
     ssl_init(certfile, keyfile);
     db_init();
 
+    INIT_DEBUG();
+
     while(read_cmd(_recv_buffer) > 0) {
         cmd = _recv_buffer[0];
+        LOG_DEBUG("\r\n recv cmd:%d", cmd);
         if ((cmd < CMD_LAST) && command_handles[cmd]) {
             ret = command_handles[cmd](&_recv_buffer[1]);
             if (ret < 0) {
@@ -408,6 +458,8 @@ int main(int argc, char** argv) {
 
     db_release();
     ssl_release();
+
+    RELEASE_DEBUG();
 
     if(_recv_buffer) {
         free(_recv_buffer);

@@ -2,6 +2,8 @@
     "cmake.sourceDirectory": "${workspaceFolder}/c_src",
     "files.associations": {
         "bio.h": "c",
-        "db.h": "c"
+        "db.h": "c",
+        "windows.h": "c",
+        "stdio.h": "c"
     }
 }
