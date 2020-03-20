@@ -98,6 +98,8 @@ int handle_create_client(byte *data) {
         _send_buffer[0] = RET_OK;
         put16(&_send_buffer[1], id);
         write_cmd(_send_buffer, 1+2);
+
+        return 0;
     } else {
         return -1;
     }
@@ -329,6 +331,7 @@ int handle_bio_read(byte *data) {
 }
 
 static command_handle command_handles[] = {
+    NULL,   // no use
     handle_cleanup,             // CMD_CLEANUP
     handle_create_client,       // CMD_CREATE_CLIENT
     handle_create_server,       // CMD_CREATE_SERVER

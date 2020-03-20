@@ -54,7 +54,7 @@ int db_allocId(void) {
     new_memory = realloc(db_manager.clients, db_manager.size*2);
     if(NULL == new_memory) {
         fprintf(stderr,"\r\n No memory to grow");
-        return DB_INVALID_ID;    
+        return DB_INVALID_ID;
     }
 
     db_manager.clients = new_memory;
@@ -68,7 +68,7 @@ int db_allocId(void) {
 struct ssl_client *db_get(int id)
 {
     if(ID2IDX(id) < db_manager.size) {
-        return &db_manager.clients[ID2IDX(id)];        
+        return &db_manager.clients[ID2IDX(id)];
     }
     fprintf(stderr,"\r\n Not found client id=%d", id);
     return NULL;
