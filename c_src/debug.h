@@ -1,7 +1,7 @@
 #ifndef _DEBUG_H_
 #define _DEBUG_H_
 
-#define DEBUG
+//#define DEBUG
 
 int init_debug(void);
 void free_debug(void);
