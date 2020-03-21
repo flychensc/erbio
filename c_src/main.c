@@ -101,7 +101,7 @@ int handle_create_client(byte *data) {
         return 0;
     }
 
-    client = db_get(id);
+    client = db_locate(id);
     if(client) {
         ssl_client_init(client, SSLMODE_CLIENT);
 
@@ -131,7 +131,7 @@ int handle_create_server(byte *data) {
         return 0;
     }
 
-    client = db_get(id);
+    client = db_locate(id);
     if(client) {
         ssl_client_init(client, SSLMODE_SERVER);
 

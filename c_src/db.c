@@ -70,10 +70,20 @@ struct ssl_client *db_get(int id)
     if(ID2IDX(id) < db_manager.size) {
         if(NULL == db_manager.clients[ID2IDX(id)].ssl) {
             // invalid client, not init
+            fprintf(stderr,"\r\n Invalid client id=%d", id);
             return NULL;
         }
         return &db_manager.clients[ID2IDX(id)];
     }
-    fprintf(stderr,"\r\n Not found client id=%d", id);
+    fprintf(stderr,"\r\n Out range client id=%d", id);
+    return NULL;
+}
+
+struct ssl_client *db_locate(int id)
+{
+    if(ID2IDX(id) < db_manager.size) {
+        return &db_manager.clients[ID2IDX(id)];
+    }
+    fprintf(stderr,"\r\n Client id=%d out of range", id);
     return NULL;
 }
