@@ -2,9 +2,10 @@
 
 -module(erbio_sample).
 
+-export([start/0, stop/0]).
 
--export([start/0]).
-
+%% start sample, create a pairs, handshake, echo message.
+-spec start() -> ok.
 start() ->
     erbio:start("cert/cacert.pem", "cert/cakey.pem"),
     {Server, Client} = createPair(),
@@ -17,6 +18,11 @@ start() ->
     Data1 = say(Client, "Unforgettable 2020"),
     echo(Server, Data1),
     freePair(Server, Client).
+
+%% stop sample
+-spec stop() -> ok.
+stop() ->
+    epbio:stop().
 
 createPair() ->
     {erbio:create(server),
