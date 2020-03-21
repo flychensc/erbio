@@ -163,7 +163,7 @@ handle_call({ssl_write, Id, Data}, _From, State) ->
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
-            <<?RET_OK, Written>> ->
+            <<?RET_OK, Written:16/big-integer>> ->
                {reply, Written, State};
 
             <<?RET_WOULD_BLOCK>> ->
@@ -198,7 +198,7 @@ handle_call({bio_write, Id, Data}, _From, State) ->
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
-            <<?RET_OK, Written>> ->
+            <<?RET_OK, Written:16/big-integer>> ->
                {reply, Written, State};
 
             <<?RET_FAIL>> ->
