@@ -59,8 +59,8 @@ is_init_finished(Id) ->
 
 %% do ssl_write
 -spec ssl_write(integer(), binary()) -> integer() | wouldblock | fail.
-ssl_write(Id, Data) ->
-    gen_server:call(?MODULE, {ssl_write, Id, Data}).
+ssl_write(Id, WtData) ->
+    gen_server:call(?MODULE, {ssl_write, Id, WtData}).
 
 %% do ssl_read
 -spec ssl_read(integer()) -> binary() | wouldblock | fail.
@@ -69,8 +69,8 @@ ssl_read(Id) ->
 
 %% do bio_write
 -spec bio_write(integer(), binary()) -> integer() | fail.
-bio_write(Id, Data) ->
-    gen_server:call(?MODULE, {bio_write, Id, Data}).
+bio_write(Id, WtData) ->
+    gen_server:call(?MODULE, {bio_write, Id, WtData}).
 
 %% do bio_read
 -spec bio_read(integer()) -> binary() | fail.
@@ -156,10 +156,10 @@ handle_call({is_init_finished, Id}, _From, State) ->
          end
     end;
 
-handle_call({ssl_write, Id, Data}, _From, State) ->
+handle_call({ssl_write, Id, WtData}, _From, State) ->
     #state{port=Port} = State,
-    DLen = size(Data),
-    Port ! {self(), {command, <<?CMD_SSL_WRITE, Id:16/big-integer, DLen:16/big-integer, Data/binary>>}},
+    DLen = size(WtData),
+    Port ! {self(), {command, <<?CMD_SSL_WRITE, Id:16/big-integer, DLen:16/big-integer, WtData/binary>>}},
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
@@ -191,10 +191,10 @@ handle_call({ssl_read, Id}, _From, State) ->
          end
     end;
 
-handle_call({bio_write, Id, Data}, _From, State) ->
+handle_call({bio_write, Id, WtData}, _From, State) ->
     #state{port=Port} = State,
-    DLen = size(Data),
-    Port ! {self(), {command, <<?CMD_BIO_WRITE, Id:16/big-integer, DLen:16/big-integer, Data/binary>>}},
+    DLen = size(WtData),
+    Port ! {self(), {command, <<?CMD_BIO_WRITE, Id:16/big-integer, DLen:16/big-integer, WtData/binary>>}},
     receive
       {Port, {data, Data}} ->
          case list_to_binary(Data) of
