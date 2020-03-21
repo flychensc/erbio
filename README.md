@@ -16,7 +16,7 @@ Usage
 -----
 1. Run `erbio:start(CertFile, KeyFile)`, e.g.: `erbio:start("cert/cacert.pem", "cert/cakey.pem")`. Certification is required for Server.
 
-2. Create Client or Server.
+2. Create Client or Server. e.g.: `erbio:create(client)`, `erbio:create(server)`.
 
 3. Do handshake until completed. API: `erbio:handshake(Id)` and `erbio:is_init_finished(Id)`. The encrypted data (Got from `erbio:bio_read(Id)`) should be sent to peer. The peer's encrypted data should be written by `erbio:bio_write(Id)`.
 
