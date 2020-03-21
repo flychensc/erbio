@@ -403,6 +403,8 @@ int main(int argc, char** argv) {
     byte cmd;
     int ret = 0;
 
+    INIT_DEBUG();
+
 #ifdef WIN32
     SetConsoleCtrlHandler(ConsoleHandler, TRUE);
 #endif
@@ -438,8 +440,6 @@ int main(int argc, char** argv) {
     ssl_init(certfile, keyfile);
     db_init();
 
-    INIT_DEBUG();
-
     while(read_cmd(_recv_buffer) > 0) {
         cmd = _recv_buffer[0];
         LOG_DEBUG("\r\n recv cmd:%d", cmd);
@@ -460,8 +460,6 @@ int main(int argc, char** argv) {
     db_release();
     ssl_release();
 
-    RELEASE_DEBUG();
-
     if(_recv_buffer) {
         free(_recv_buffer);
         _recv_buffer = NULL;
@@ -470,6 +468,8 @@ int main(int argc, char** argv) {
         free(_send_buffer);
         _send_buffer = NULL;
     }
+
+    RELEASE_DEBUG();
 
     return ret;
 }

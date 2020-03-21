@@ -68,6 +68,10 @@ int db_allocId(void) {
 struct ssl_client *db_get(int id)
 {
     if(ID2IDX(id) < db_manager.size) {
+        if(NULL == db_manager.clients[ID2IDX(id)].ssl) {
+            // invalid client, not init
+            return NULL;
+        }
         return &db_manager.clients[ID2IDX(id)];
     }
     fprintf(stderr,"\r\n Not found client id=%d", id);
