@@ -34,3 +34,18 @@ void log_debug(char *fmt, ...)
 
     WriteFile(_dbg_file, _debug_buf, (DWORD)strlen(_debug_buf), &written, 0);
 }
+
+void dump_pkt(byte *pkt, int len)
+{
+    DWORD written;
+    char str_buf[16+4];
+    int i;
+
+    for (i=0; i<len; i++) {
+        if (0 == (i%16)) {
+            WriteFile(_dbg_file, "\r\n", (DWORD)strlen("\r\n"), &written, 0);
+        }
+        sprintf_s(str_buf, 16, " %02X", pkt[i]);
+        WriteFile(_dbg_file, str_buf, (DWORD)strlen(str_buf), &written, 0);
+    }
+}
