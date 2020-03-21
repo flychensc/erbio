@@ -6,7 +6,7 @@
 -export([start/0]).
 
 start() ->
-    erbio:start(),
+    erbio:start("cert/cacert.pem", "cert/cakey.pem"),
     {Server, Client} = createPair(),
 
     erbio:handshake(Client),

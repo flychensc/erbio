@@ -167,6 +167,7 @@ int handle_handshake(byte *data) {
                 _send_buffer[0] = RET_WOULD_BLOCK;
                 break;
             case SSLSTATUS_FAIL:
+                LOG_DEBUG("\r\n handshak fail");
                 _send_buffer[0] = RET_FAIL;
                 break;
             default:
