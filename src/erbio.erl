@@ -166,7 +166,7 @@ handle_call({ssl_write, Id, Data}, _From, State) ->
             <<?RET_OK, Written>> ->
                {reply, Written, State};
 
-            <<?RET_WOULD_BLOCK, 0>> ->
+            <<?RET_WOULD_BLOCK>> ->
                {reply, wouldblock, State};
 
             <<?RET_FAIL>> ->
@@ -183,7 +183,7 @@ handle_call({ssl_read, Id}, _From, State) ->
             <<?RET_OK, ReadData/binary>> ->
                {reply, ReadData, State};
 
-            <<?RET_WOULD_BLOCK, 0>> ->
+            <<?RET_WOULD_BLOCK>> ->
                {reply, wouldblock, State};
 
             <<?RET_FAIL>> ->
