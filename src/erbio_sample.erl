@@ -9,13 +9,8 @@ start() ->
     erbio:start("cert/cacert.pem", "cert/cakey.pem"),
     {Server, Client} = createPair(),
 
-    erbio:handshake(Client),
-    Data = erbio:bio_read(Client),
-    erbio:bio_write(Server, Data),
-
-    erbio:handshake(Server),
-    Data1 = erbio:bio_read(Server),
-    erbio:bio_write(Client, Data1),
+    doHandShake(Client, Server),
+    io:format("handshake done"),
 
     Data = say(Server, "Welcome to 2020"),
     echo(Client, Data),
@@ -31,8 +26,23 @@ freePair(Server, Client) ->
     erbio:cleanup(Client),
     erbio:cleanup(Server).
 
+doHandShake(Peer1, Peer2) ->
+    case erbio:is_init_finished(Peer1) of
+        true ->
+            case erbio:is_init_finished(Peer2) of
+                true -> done;
+                false -> doHandShake(Peer2, Peer1)
+            end;
+
+        false ->
+            erbio:handshake(Peer1),
+            Data = erbio:bio_read(Peer1),
+            erbio:bio_write(Peer2, Data),
+            doHandShake(Peer2, Peer1)
+    end.
+
 say(Id, Msg) ->
-    erbio:ssl_write(Id, Msg),
+    erbio:ssl_write(Id, list_to_binary(Msg)),
     % get encryted data
     erbio:bio_read(Id).
 
@@ -40,5 +50,5 @@ echo(Id, Data) ->
     % put encryted data
     erbio:bio_write(Id, Data),
     % get plaintext
-    Msg = erbio:ssl_read(Id),
-    io:format("receiev message:~w~n", [Msg]).
+    Msg = binary_to_list(erbio:ssl_read(Id)),
+    io:format("echo: ~s~n", [Msg]).
